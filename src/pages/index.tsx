@@ -1,32 +1,36 @@
-import { GetStaticProps } from 'next';
-import Image from "next/future/image";
-import Link from 'next/link';
+import { useContext } from 'react';
 
-import Stripe from 'stripe'; 
+import { GetStaticProps } from 'next';
+import Link from 'next/link';
+import Image from 'next/future/image';
+import Head from 'next/head';
+
+import { Bag } from 'phosphor-react';
+
+import Stripe from 'stripe';
 import { stripe } from '../lib/stripe';
 
 import { useKeenSlider } from 'keen-slider/react';
 
-import { HomeContainer, Product } from "../styles/pages/home";
+import { HomeContainer, ProductAnchor } from "../styles/pages/home";
 import 'keen-slider/keen-slider.min.css';
-import Head from 'next/head';
+
+import { Product } from '../models/Product.interface';
+import { CartContext } from '../context/CartContext';
+import { priceFormatter } from '../utils/formatter';
+
 interface HomeProps {
-  products: {
-    id:       string;
-    name:     string;
-    imageUrl: string;
-    price:    string
-  }[]
+  products: Product[]
 }
 
 export default function Home({ products }: HomeProps) {
+  const { addItem } = useContext(CartContext);
   const [ sliderRef ] = useKeenSlider({
     slides: {
       perView: 3,
       spacing: 48
     }
   })
-
   return (
     <>
       <Head>
@@ -36,19 +40,22 @@ export default function Home({ products }: HomeProps) {
       {
         products.map(product => {
           return (
-            <Link 
-              href={`/product/${product.id}`}
-              key={product.id}
-              prefetch={false}
-            >
-              <Product  className="keen-slider__slide" >
-                <Image src={product.imageUrl} alt="" width={520} height={480}/>
-                <footer>
+            <ProductAnchor className="keen-slider__slide" key={product.id}>
+              <Link href={`/product/${product.id}`} prefetch={false} passHref>
+                <a>
+                  <Image src={product.imageUrl} alt="" width={520} height={480}/>
+                </a>
+              </Link>
+              <footer>
+                <div>
                   <strong>{product.name}</strong>
-                  <span>{product.price}</span>
-                </footer>
-              </Product>
-            </Link>
+                  <span>{priceFormatter.format(product.price / 100)}</span>
+                </div>
+                <button type="button" onClick={() => addItem(product)}>
+                  <Bag size={24}/>
+                </button>
+              </footer>
+            </ProductAnchor>
           )
         })
       }
@@ -67,10 +74,8 @@ export const getStaticProps: GetStaticProps = async () => {
       id: product.id,
       name: product.name,
       imageUrl: product.images[0],
-      price: new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-      }).format(price.unit_amount / 100)
+      price: price.unit_amount,
+      priceId: price.id
     }
   })
   return {

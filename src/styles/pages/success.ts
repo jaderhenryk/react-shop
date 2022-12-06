@@ -36,6 +36,12 @@ export const SuccessContainer = styled('main', {
   }
 });
 
+export const ImagesContainer = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  flexDirection: 'row'
+});
+
 export const ImageContainer = styled('div', {
   width: '100%',
   maxWidth: 130,
@@ -48,6 +54,12 @@ export const ImageContainer = styled('div', {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
+
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.25)',
+
+  '&:not(:first-child)': {
+    marginLeft: '-4rem'
+  },
   
   img: {
     objectFit: 'cover'
